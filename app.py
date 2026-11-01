@@ -37,7 +37,7 @@ Context:
 
 Question: {question}
 Answer:"""
-        resp = llm.invoke(prompt).content
+    resp = llm.invoke(prompt).content
     if isinstance(resp, list):
         answer = "".join(b.get("text", "") for b in resp if isinstance(b, dict) and b.get("type") == "text")
     else:
