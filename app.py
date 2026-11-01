@@ -37,7 +37,11 @@ Context:
 
 Question: {question}
 Answer:"""
-    answer = llm.invoke(prompt).content
+        resp = llm.invoke(prompt).content
+    if isinstance(resp, list):
+        answer = "".join(b.get("text", "") for b in resp if isinstance(b, dict) and b.get("type") == "text")
+    else:
+        answer = resp
     sources = sorted({f"{d.metadata.get('source', 'document')} (page {d.metadata.get('page', 0) + 1})" for d in found})
     return answer, sources
 
