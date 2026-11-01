@@ -1,0 +1,7 @@
+streamlit
+langchain
+langchain-qdrant
+langchain-huggingface
+langchain-google-genai
+qdrant-client
+sentence-transformers
