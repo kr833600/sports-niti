@@ -1,4 +1,5 @@
 import streamlit as st
+from qdrant_client import models
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -6,6 +7,24 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 st.set_page_config(page_title="Sports-Niti", page_icon="🏅")
 st.title("🏅 Sports-Niti")
 st.caption("Khelo India Scheme & Talent Guidance Assistant")
+
+SPORT_KEYWORDS = [
+    ("table tennis", "Tabletennis"),
+    ("tabletennis", "Tabletennis"),
+    ("wrestl", "Wrestling"),
+    ("boxing", "Boxing"),
+    ("boxer", "Boxing"),
+    ("shooting", "Shooting"),
+    ("shooter", "Shooting"),
+    ("tennis", "Tennis"),
+]
+
+def detect_sport(question):
+    q = question.lower()
+    for keyword, tag in SPORT_KEYWORDS:
+        if keyword in q:
+            return tag
+    return None
 
 @st.cache_resource
 def load_system():
@@ -21,12 +40,19 @@ def load_system():
         google_api_key=st.secrets["GEMINI_API_KEY"],
         temperature=0.2,
     )
-    return store.as_retriever(search_kwargs={"k": 4}), llm
+    return store, llm
 
-retriever, llm = load_system()
+store, llm = load_system()
 
 def ask(question):
-    found = retriever.invoke(question)
+    sport = detect_sport(question)
+    if sport:
+        flt = models.Filter(must=[
+            models.FieldCondition(key="metadata.sport", match=models.MatchValue(value=sport))
+        ])
+        found = store.similarity_search(question, k=4, filter=flt)
+    else:
+        found = store.similarity_search(question, k=4)
     context = "\n\n".join(d.page_content for d in found)
     prompt = f"""You are Sports-Niti, an assistant for the Khelo India Scheme and talent guidance.
 Answer ONLY using the context below. If the answer is not in the context, say:
@@ -52,7 +78,7 @@ for m in st.session_state.messages:
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
 
-if q := st.chat_input("Ask about Khelo India, wrestling or boxing selection..."):
+if q := st.chat_input("Ask about wrestling, boxing, tennis, table tennis or shooting selection..."):
     st.session_state.messages.append({"role": "user", "content": q})
     with st.chat_message("user"):
         st.markdown(q)
