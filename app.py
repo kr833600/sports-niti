@@ -43,7 +43,7 @@ def load_system():
     return store, llm
 
 store, llm = load_system()
-
+@st.cache_data(show_spinner=False)
 def ask(question):
     sport = detect_sport(question)
     if sport:
