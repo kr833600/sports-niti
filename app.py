@@ -19,12 +19,14 @@ SPORT_KEYWORDS = [
     ("tennis", "Tennis"),
 ]
 
+
 def detect_sport(question):
     q = question.lower()
     for keyword, tag in SPORT_KEYWORDS:
         if keyword in q:
             return tag
     return None
+
 
 @st.cache_resource
 def load_system():
@@ -42,7 +44,10 @@ def load_system():
     )
     return store, llm
 
+
 store, llm = load_system()
+
+
 @st.cache_data(show_spinner=False)
 def ask(question):
     sport = detect_sport(question)
@@ -70,6 +75,7 @@ Answer:"""
         answer = resp
     sources = sorted({f"{d.metadata.get('source', 'document')} (page {d.metadata.get('page', 0) + 1})" for d in found})
     return answer, sources
+
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
