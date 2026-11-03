@@ -36,7 +36,7 @@ def load_system():
         api_key=st.secrets["QDRANT_API_KEY"],
     )
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.8-flash",
+        model="gemini-flash -latest",
         google_api_key=st.secrets["GEMINI_API_KEY"],
         temperature=0.2,
     )
